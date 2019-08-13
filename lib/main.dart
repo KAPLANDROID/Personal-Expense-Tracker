@@ -55,31 +55,37 @@ class _MyHomePageState extends State<MyHomePage> {
       id: 't1',
       title: 'New Shoes',
       amount: 99.99,
-      date: DateTime(2019, 8, 12),
+      date: DateTime.now().subtract(Duration(days: 1)),
     ),
     Transaction(
       id: 't2',
       title: 'Old Shoes',
       amount: 12.89,
-      date: DateTime(2019, 8, 11),
+      date: DateTime.now().subtract(Duration(days: 2)),
     ),
     Transaction(
       id: 't3',
       title: 'New Course',
       amount: 15.99,
-      date: DateTime(2019, 8, 13),
+      date: DateTime.now(),
     ),
     Transaction(
       id: 't4',
       title: 'Video Games',
       amount: 79.99,
-      date: DateTime(2019, 8, 11),
+      date: DateTime.now().subtract(Duration(days: 2)),
     ),
     Transaction(
       id: 't5',
+      title: 'Phone Bill',
+      amount: 50.51,
+      date: DateTime.now().subtract(Duration(days: 4)),
+    ),
+    Transaction(
+      id: 't6',
       title: 'Random Stuff',
-      amount: 50.0,
-      date: DateTime(2019, 8, 09),
+      amount: 25.62,
+      date: DateTime.now().subtract(Duration(days: 3)),
     ),
   ];
 
@@ -124,51 +130,54 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  int _picSize = 100;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Personal Expense Tracker",
-          style: TextStyle(fontFamily: 'OpenSans'),
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              startAddNewTransaction(context);
-            },
-          ),
-        ],
+    final appBar = AppBar(
+      title: Text(
+        "Personal Expense Tracker",
+        style: TextStyle(fontFamily: 'OpenSans'),
       ),
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () {
+            startAddNewTransaction(context);
+          },
+        ),
+      ],
+    );
+
+    return Scaffold(
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
 //        mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Container(
-              width: double.infinity,
+              height: (MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      appBar.preferredSize.height) *
+                  0.3,
               child: Chart(_recentTransactions),
             ),
-            Column(
-              children: <Widget>[
-                TransactionList(_recentTransactions, _deleteTransaction),
-                Container(
-                  height: _picSize.toDouble(),
-                  alignment: Alignment.bottomLeft,
-                  child: Image.network(
-                      'https://avatars2.githubusercontent.com/u/3216217?s=$_picSize&v=4'),
-                ),
-              ],
+            Container(
+              height: (MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      appBar.preferredSize.height) *
+                  0.7,
+              child: TransactionList(_recentTransactions, _deleteTransaction),
             ),
           ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+//        child: Icon(Icons.add),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.network('http://www.kaplandroid.com/kplndrd.png'),
+        ),
         onPressed: () {
           startAddNewTransaction(context);
         },
