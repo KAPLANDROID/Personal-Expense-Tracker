@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:expense_planner/widgets/chart.dart';
 import 'package:expense_planner/widgets/new_transaction.dart';
 import 'package:expense_planner/widgets/transaction_list.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -124,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void startAddNewTransaction(BuildContext ctx) {
+  void _startAddNewTransaction(BuildContext ctx) {
     showModalBottomSheet(
         context: ctx,
         builder: (_) {
@@ -138,35 +141,49 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+    var mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
 
-    final appBar = AppBar(
-      title: Text(
-        "Personal Expense Tracker",
-        style: TextStyle(fontFamily: 'OpenSans'),
-      ),
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.add),
-          onPressed: () {
-            startAddNewTransaction(context);
-          },
-        ),
-      ],
-    );
+    final PreferredSizeWidget appBar = Platform.isIOS
+        ? CupertinoNavigationBar(
+            middle: Text(
+              'Personal Expense Tracker',
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                GestureDetector(
+                  child: Icon(CupertinoIcons.add),
+                  onTap: () => _startAddNewTransaction(context),
+                )
+              ],
+            ),
+          )
+        : AppBar(
+            title: Text(
+              "Personal Expense Tracker",
+              style: TextStyle(fontFamily: 'OpenSans'),
+            ),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.add),
+                onPressed: () {
+                  _startAddNewTransaction(context);
+                },
+              ),
+            ],
+          );
 
     final txListWidget = Container(
-      height: (MediaQuery.of(context).size.height -
-              MediaQuery.of(context).padding.top -
+      height: (mediaQuery.size.height -
+              mediaQuery.padding.top -
               appBar.preferredSize.height) *
           0.7,
       child: TransactionList(_recentTransactions, _deleteTransaction),
     );
 
-    return Scaffold(
-      appBar: appBar,
-      body: SingleChildScrollView(
+    final pageBody = SafeArea(
+      child: SingleChildScrollView(
         child: Column(
 //        mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -175,8 +192,12 @@ class _MyHomePageState extends State<MyHomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text('Show Cart'),
-                  Switch(
+                  Text(
+                    'Show Cart',
+                    style: Theme.of(context).textTheme.title,
+                  ),
+                  Switch.adaptive(
+                    activeColor: Theme.of(context).accentColor,
                     value: _showChart,
                     onChanged: (value) {
                       setState(() {
@@ -186,38 +207,51 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               ),
+            if (isLandscape)
+              _showChart
+                  ? Container(
+                      height: (mediaQuery.size.height -
+                              mediaQuery.padding.top -
+                              appBar.preferredSize.height) *
+                          0.7,
+                      child: Chart(_recentTransactions),
+                    )
+                  : txListWidget,
             if (!isLandscape)
               Container(
-                height: (MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).padding.top -
+                height: (mediaQuery.size.height -
+                        mediaQuery.padding.top -
                         appBar.preferredSize.height) *
                     0.3,
                 child: Chart(_recentTransactions),
               ),
             if (!isLandscape) txListWidget,
-            _showChart
-                ? Container(
-                    height: (MediaQuery.of(context).size.height -
-                            MediaQuery.of(context).padding.top -
-                            appBar.preferredSize.height) *
-                        0.7,
-                    child: Chart(_recentTransactions),
-                  )
-                : txListWidget,
           ],
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-//        child: Icon(Icons.add),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.network('http://www.kaplandroid.com/kplndrd.png'),
-        ),
-        onPressed: () {
-          startAddNewTransaction(context);
-        },
-      ),
     );
+    return Platform.isIOS
+        ? CupertinoPageScaffold(
+            child: pageBody,
+            navigationBar: appBar,
+          )
+        : Scaffold(
+            appBar: appBar,
+            body: pageBody,
+            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+            floatingActionButton: Platform.isAndroid
+                ? FloatingActionButton(
+//        child: Icon(Icons.add),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.network(
+                          'http://www.kaplandroid.com/kplndrd.png'),
+                    ),
+                    onPressed: () {
+                      _startAddNewTransaction(context);
+                    },
+                  )
+                : Container(),
+          );
   }
 }
